@@ -1,0 +1,272 @@
+{
+  "meta": {
+    "instanceId": "bc826c03296e9144dbf1e08354a976fa338abd432ac95209ba082a1dd5446b0b"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "689bbdc0-aefe-4be0-9ec0-a6c6871f1fa0",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        260
+      ],
+      "webhookId": "eb8a6f7f-fc76-4db3-ab1f-da2d790c869f",
+      "credentials": {
+        "telegramApi": {
+          "id": "gjucf8L1spY1Ys5J",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "17216905-ef5d-48e1-9ec5-f0f9fab1f56e",
+              "leftValue": "={{ $json.message.chat.type }}",
+              "rightValue": "start",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "868c3167-459d-4965-9f9d-91aad02c058b",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        980,
+        240
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f18a5e05-f3d2-49cb-b9fb-cf9f6530ec2e",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7637eef3-a0bf-4ac8-acd7-68c43895823c",
+              "name": "chat id telegram",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d44a311f-a188-4e0c-9c63-89a7ae46f99b",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1340,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json['chat id telegram'] }}"
+      },
+      "id": "f12f0b03-16b0-4871-ac71-25a3fe3bb639",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1840,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "249d5750-6cdf-42bb-8b74-1bbcef61a081",
+      "name": "SerpAPI",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        2020,
+        680
+      ],
+      "credentials": {
+        "serpApi": {
+          "id": "GeJ5S7wLDjb1QzOn",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Edit Fields').item.json['chat id telegram'] }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "fea1b7c2-d92d-4a30-8e9b-bce6bf1a31f8",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2440,
+        500
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "gjucf8L1spY1Ys5J",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "2b37585f-61e2-44e8-809f-4670c342ad90",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        660
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oara3E8AOTsZdeBx",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# ROL\neres ultimaporfa, un bot especializado en responder preguntas frecuentes realizadas por el usuario\n\n## Tarea\n\ntu funcion principal es asistir al usuario en lo que el pregunte, debes de responder a su mensaje el cual fue : {{ $('Telegram Trigger').item.json.message.text }}\n\n\n## Notas\n\n- tus respuestas deben ser cortas, breves y concisas, no mas de 200 caracteres",
+        "options": {}
+      },
+      "id": "c4b65883-d38f-4a6f-bd9a-df7faad83962",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1720,
+        460
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}
